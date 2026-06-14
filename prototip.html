@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GlasAI — demo</title>
+<style>
+  :root{
+    --navy:#16213E; --navy2:#1F2A4D; --ink:#1A2238; --teal:#00A8A8;
+    --teal-d:#047A7A; --gold:#F4B860; --ice:#DCE7F2; --paper:#F4F6FB;
+    --mute:#6B7591; --line:#E1E7F0; --green:#2FA56A; --red:#D9596A; --body:#3A4762;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:linear-gradient(160deg,#0F1830 0%, #1B2747 100%);
+    min-height:100vh; color:var(--ink);
+    display:flex; flex-direction:column; align-items:center;
+    padding:24px 16px 48px;
+  }
+
+  /* phone shell */
+  .phone{
+    width:100%; max-width:390px; background:#fff;
+    border-radius:30px; overflow:hidden;
+    box-shadow:0 24px 60px rgba(0,0,0,.45);
+    min-height:780px; display:flex; flex-direction:column;
+    position:relative;
+  }
+  .topbar{
+    background:var(--navy); color:#fff; padding:16px 18px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .logo-dot{width:26px;height:26px;border-radius:50%;background:var(--teal);
+    display:flex;align-items:center;justify-content:center;}
+  .logo-dot span{display:block;width:12px;height:9px;background:#fff;border-radius:2px;}
+  .brand{font-weight:700;font-size:17px;letter-spacing:.3px}
+  .screen-tag{margin-left:auto;font-size:12px;color:#9FB0CC}
+
+  .screen{display:none;flex:1;padding:26px 22px 30px;flex-direction:column;animation:fade .25s ease}
+  .screen.active{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  h1{font-size:25px;line-height:1.15;margin-bottom:6px}
+  h1 .accent{color:var(--teal-d)}
+  .sub{color:var(--mute);font-size:14px;line-height:1.4;margin-bottom:20px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--teal-d);text-transform:uppercase;margin-bottom:6px}
+
+  /* buttons */
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;padding:16px;border:none;border-radius:14px;font-size:16px;
+    font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;text-decoration:none}
+  .btn-primary{background:var(--teal);color:#fff}
+  .btn-primary:hover{background:var(--teal-d)}
+  .btn-dark{background:var(--navy);color:#fff}
+  .btn-dark:hover{background:var(--navy2)}
+  .btn-ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line)}
+  .btn-ghost:hover{background:var(--paper)}
+  .spacer{flex:1}
+  .footnote{text-align:center;color:var(--mute);font-size:12px;margin-top:16px}
+
+  /* hero card screen 1 */
+  .hero-card{background:var(--paper);border-radius:16px;padding:20px;display:flex;
+    gap:14px;align-items:center;margin-bottom:24px}
+  .hero-badge{width:64px;height:64px;border-radius:50%;background:var(--teal);
+    flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px}
+  .hero-card p{font-size:13px;line-height:1.4;color:var(--ink)}
+
+  /* option list (elections, chips) */
+  .opt{display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;
+    border:1.5px solid var(--line);background:#fff;margin-bottom:12px;cursor:pointer;transition:.15s}
+  .opt:hover{border-color:var(--teal);background:#F2FBFB}
+  .opt.selected{background:var(--teal);border-color:var(--teal);color:#fff}
+  .opt .ico{width:40px;height:40px;border-radius:50%;background:var(--paper);
+    display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .opt.selected .ico{background:rgba(255,255,255,.22)}
+  .opt .ttl{font-weight:700;font-size:15px}
+  .opt .desc{font-size:12px;color:var(--mute)}
+  .opt.selected .desc{color:#CFF0F0}
+
+  /* progress */
+  .progress{height:8px;background:var(--line);border-radius:4px;margin-bottom:6px;overflow:hidden}
+  .progress > i{display:block;height:100%;background:var(--teal);border-radius:4px}
+  .step-count{text-align:right;font-size:12px;color:var(--mute);margin-bottom:18px}
+
+  /* answer chips */
+  .chip{display:block;width:100%;text-align:center;padding:13px;border-radius:22px;
+    border:1.5px solid var(--line);background:#fff;font-weight:700;font-size:14px;
+    margin-bottom:12px;cursor:pointer;font-family:inherit;transition:.15s;color:var(--ink)}
+  .chip:hover{border-color:var(--teal)}
+  .chip.selected{background:var(--teal);border-color:var(--teal);color:#fff}
+  .chip-wrap{background:var(--paper);border-radius:16px;padding:18px}
+  .topics{text-align:center;font-size:12px;color:var(--mute);margin:16px 0}
+
+  /* results */
+  .result-head{background:var(--paper);border-radius:16px;padding:18px;margin-bottom:22px}
+  .result-head .lbl{font-size:13px;color:var(--mute);margin-bottom:6px}
+  .result-head .big{font-size:26px;font-weight:800;color:var(--teal-d);margin-bottom:6px}
+  .result-head .tags{font-size:12px;color:var(--green)}
+  .bar-row{margin-bottom:16px}
+  .bar-row .meta{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:7px}
+  .bar-row .meta .pct{color:var(--teal-d)}
+  .bar-track{height:12px;background:var(--paper);border-radius:6px;overflow:hidden}
+  .bar-track > i{display:block;height:100%;border-radius:6px}
+
+  /* chat */
+  .bubble-user{align-self:flex-end;max-width:80%;background:var(--teal);color:#fff;
+    padding:12px 16px;border-radius:14px;font-size:13px;line-height:1.35;margin-bottom:14px}
+  .bubble-ai{background:#fff;border:1.5px solid var(--line);border-radius:14px;
+    padding:14px;margin-bottom:14px}
+  .ai-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .ai-dot{width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+  .bubble-ai p{font-size:12.5px;line-height:1.4;color:var(--ink)}
+  .source{margin-top:10px;background:var(--paper);border-radius:8px;padding:8px 10px;
+    font-size:11px;color:var(--teal-d)}
+  .chat-input{display:flex;gap:10px;margin-top:6px}
+  .chat-input .fake-field{flex:1;background:var(--paper);border:1.5px solid var(--line);
+    border-radius:12px;padding:14px;color:var(--mute);font-size:13px}
+  .chat-input .send{width:52px;border-radius:12px;background:var(--teal);color:#fff;
+    border:none;font-size:18px;cursor:pointer}
+
+  /* how to vote steps */
+  .place{background:var(--paper);border-radius:16px;padding:16px;margin-bottom:22px}
+  .place .lbl{font-size:12px;color:var(--mute);margin-bottom:4px}
+  .place .name{font-size:16px;font-weight:700}
+  .vsteps{position:relative;margin-left:6px}
+  .vstep{display:flex;gap:14px;padding-bottom:20px;position:relative}
+  .vstep:not(:last-child)::before{content:"";position:absolute;left:17px;top:36px;
+    bottom:0;width:2px;background:var(--line)}
+  .vnum{width:36px;height:36px;border-radius:50%;background:var(--teal);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;z-index:1}
+  .vnum.done{background:var(--green)}
+  .vstep .vt{font-weight:700;font-size:15px}
+  .vstep .vd{font-size:12px;color:var(--mute)}
+
+  /* bottom nav (progress dots + restart) */
+  .navbar{display:flex;align-items:center;gap:14px;justify-content:center;margin-top:22px}
+  .dots{display:flex;gap:8px}
+  .dots i{width:8px;height:8px;border-radius:50%;background:#34406A;display:block;transition:.2s;cursor:pointer}
+  .dots i.on{background:var(--gold);width:22px;border-radius:4px}
+  .restart{background:transparent;border:none;color:#9FB0CC;font-size:12px;cursor:pointer;
+    text-decoration:underline;font-family:inherit}
+
+  .hint{color:#9FB0CC;font-size:12px;margin-top:18px;text-align:center;max-width:390px}
+</style>
+</head>
+<body>
+
+  <div class="phone">
+    <div class="topbar">
+      <div class="logo-dot"><span></span></div>
+      <div class="brand">GlasAI</div>
+      <div class="screen-tag" id="screenTag">Početni</div>
+    </div>
+
+    <!-- 1 — POČETNI -->
+    <section class="screen active" data-screen="0">
+      <h1>Tvoj glas,<br><span class="accent">tvoja odluka.</span></h1>
+      <p class="sub">Saznaj koja stranka najbolje predstavlja tvoje stavove.</p>
+      <div class="hero-card">
+        <div class="hero-badge">✓</div>
+        <p>Odgovori na par pitanja i usporedi se sa strankama — brzo i s izvorima.</p>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" onclick="go(1)">Usporedi me →</button>
+      <div style="height:12px"></div>
+      <button class="btn btn-ghost" onclick="go(5)">Kako glasati?</button>
+      <p class="footnote">Brzo · Nepristrano · S izvorima</p>
+    </section>
+
+    <!-- 2 — ODABIR IZBORA -->
+    <section class="screen" data-screen="1">
+      <div class="eyebrow">Korak 1</div>
+      <h1>Koji izbori?</h1>
+      <p class="sub">Odaberi vrstu izbora za usporedbu.</p>
+      <div class="opt selected"><div class="ico">🗳️</div><div><div class="ttl">Parlamentarni izbori</div><div class="desc">Zastupnici u Saboru</div></div></div>
+      <div class="opt"><div class="ico">🏛️</div><div><div class="ttl">Predsjednički izbori</div><div class="desc">Predsjednik RH</div></div></div>
+      <div class="opt"><div class="ico">🏙️</div><div><div class="ttl">Lokalni izbori</div><div class="desc">Gradovi i općine</div></div></div>
+      <div class="opt"><div class="ico">🇪🇺</div><div><div class="ttl">Europski parlament</div><div class="desc">Zastupnici u EU</div></div></div>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" onclick="go(2)">Nastavi →</button>
+    </section>
+
+    <!-- 3 — UPITNIK -->
+    <section class="screen" data-screen="2">
+      <div class="progress"><i style="width:40%"></i></div>
+      <div class="step-count">2 / 5</div>
+      <h1>Koliko ti je važno <span class="accent">stanovanje?</span></h1>
+      <p class="sub">Pristupačni stanovi i kontrola najma za mlade.</p>
+      <div class="chip-wrap">
+        <button class="chip selected">Jako mi je važno</button>
+        <button class="chip">Donekle važno</button>
+        <button class="chip">Neutralno</button>
+        <button class="chip">Nije mi važno</button>
+      </div>
+      <p class="topics">Teme: obrazovanje · stanovanje · okoliš · zdravstvo</p>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" onclick="go(3)">Vidi rezultat →</button>
+    </section>
+
+    <!-- 4 — REZULTATI -->
+    <section class="screen" data-screen="3">
+      <h1>Tvoje podudaranje</h1>
+      <p class="sub">Na temelju tvojih odgovora.</p>
+      <div class="result-head">
+        <div class="lbl">Najbliže tvojim stavovima</div>
+        <div class="big">Stranka B — 82%</div>
+        <div class="tags">● okoliš&nbsp;&nbsp;● obrazovanje&nbsp;&nbsp;● stanovanje</div>
+      </div>
+      <div class="bar-row"><div class="meta"><span>Stranka B</span><span class="pct">82%</span></div><div class="bar-track"><i style="width:82%;background:var(--teal)"></i></div></div>
+      <div class="bar-row"><div class="meta"><span>Stranka A</span><span class="pct" style="color:#B68A2E">64%</span></div><div class="bar-track"><i style="width:64%;background:var(--gold)"></i></div></div>
+      <div class="bar-row"><div class="meta"><span>Stranka D</span><span class="pct" style="color:var(--mute)">47%</span></div><div class="bar-track"><i style="width:47%;background:#8DA0C2"></i></div></div>
+      <div class="bar-row"><div class="meta"><span>Stranka C</span><span class="pct" style="color:var(--mute)">31%</span></div><div class="bar-track"><i style="width:31%;background:#B6BECC"></i></div></div>
+      <div class="spacer"></div>
+      <button class="btn btn-dark" onclick="go(4)">Pitaj asistenta o ovome →</button>
+    </section>
+
+    <!-- 5 — PITAJ ASISTENTA -->
+    <section class="screen" data-screen="4">
+      <h1>AI asistent</h1>
+      <p class="sub">Pitaj sve o strankama i temama.</p>
+      <div class="bubble-user">Što Stranka B nudi za stanovanje?</div>
+      <div class="bubble-ai">
+        <div class="ai-head"><div class="ai-dot">AI</div><strong style="font-size:13px">GlasAI asistent</strong></div>
+        <p>Stranka B predlaže 5.000 javnih najamnih stanova i ograničenje rasta najma na 3% godišnje.</p>
+        <div class="source">🔗 Izvor: program stranke, str. 12</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="chat-input">
+        <div class="fake-field">Postavi pitanje…</div>
+        <button class="send" onclick="go(5)">➤</button>
+      </div>
+      <p class="footnote" style="margin-top:12px">Svaki odgovor dolazi s navedenim izvorom.</p>
+    </section>
+
+    <!-- 6 — KAKO GLASATI -->
+    <section class="screen" data-screen="5">
+      <h1>Kako glasati</h1>
+      <p class="sub">Tvoje biračko mjesto i postupak.</p>
+      <div class="place">
+        <div class="lbl">📍 Tvoje biračko mjesto</div>
+        <div class="name">OŠ Ivana Gundulića, Zagreb</div>
+      </div>
+      <div class="vsteps">
+        <div class="vstep"><div class="vnum done">✓</div><div><div class="vt">Ponesi osobnu iskaznicu</div><div class="vd">Vrijedi i putovnica ili vozačka.</div></div></div>
+        <div class="vstep"><div class="vnum">2</div><div><div class="vt">Dođi na biračko mjesto</div><div class="vd">Otvoreno 7:00 – 19:00.</div></div></div>
+        <div class="vstep"><div class="vnum">3</div><div><div class="vt">Zaokruži i ubaci listić</div><div class="vd">Glasaš tajno u kabini.</div></div></div>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" onclick="go(0)">Gotovo — natrag na početak</button>
+    </section>
+
+    <!-- bottom nav -->
+    <div style="background:var(--navy);padding:14px">
+      <div class="navbar">
+        <div class="dots" id="dots"></div>
+        <button class="restart" onclick="go(0)">Ispočetka</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="hint">Demo prototip — klikni gumbe za prolazak kroz Tein tijek: Početni → Odabir → Upitnik → Rezultat → Pitaj → Kako glasati.</p>
+
+<script>
+  const screens = document.querySelectorAll('.screen');
+  const tags = ['Početni','Odabir izbora','Upitnik','Rezultati','Pitaj asistenta','Kako glasati'];
+  const dotsBox = document.getElementById('dots');
+  const tagEl = document.getElementById('screenTag');
+
+  // build progress dots
+  screens.forEach((_, i) => {
+    const d = document.createElement('i');
+    d.onclick = () => go(i);
+    dotsBox.appendChild(d);
+  });
+  const dots = dotsBox.querySelectorAll('i');
+
+  function go(n){
+    screens.forEach(s => s.classList.remove('active'));
+    screens[n].classList.add('active');
+    dots.forEach((d,i) => d.classList.toggle('on', i === n));
+    tagEl.textContent = tags[n];
+    document.querySelector('.phone').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  // make answer chips & options visually selectable (UI only)
+  document.querySelectorAll('.chip-wrap').forEach(wrap => {
+    wrap.querySelectorAll('.chip').forEach(c => {
+      c.onclick = () => { wrap.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected')); c.classList.add('selected'); };
+    });
+  });
+  document.querySelectorAll('.screen[data-screen="1"] .opt').forEach(o => {
+    o.onclick = () => { document.querySelectorAll('.screen[data-screen="1"] .opt').forEach(x=>x.classList.remove('selected')); o.classList.add('selected'); };
+  });
+
+  go(0);
+</script>
+</body>
+</html>
